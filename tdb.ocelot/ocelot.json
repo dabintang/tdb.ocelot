@@ -1,0 +1,44 @@
+﻿{
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/tdbaccount/{url}", //请求路径模板
+      "UpstreamHttpMethod": [ "OPTIONS", "GET", "POST" ], //请求方法数组
+      "DownstreamPathTemplate": "/tdbaccount/{url}", //下游请求地址模板
+      "DownstreamScheme": "http", //请求协议，支持http和https
+      //"DownstreamHostAndPorts": [ //服务地址
+      //  {
+      //    "Host": "120.79.229.45",
+      //    "Port": 20001
+      //  }
+      //],
+      "ServiceName": "tdb.account", //服务名
+      "UseServiceDiscovery": true, //是否启用服务发现
+      "LoadBalancerOptions": { //负载均衡 RoundRobin(轮询)/LeastConnection(最少连接数)/CookieStickySessions(相同的Sessions或Cookie发往同一个地址)/NoLoadBalancer(不使用负载)
+        "Type": "LeastConnection"
+      },
+      //限流配置
+      "RateLimitOptions": {
+        "ClientWhitelist": [ "zijiren" ], //数组，在请求头中包含ClientId=xxx的请求不受限流控制，其中ClientId这个key可以修改，xxx表示配置的白名单
+        "EnableRateLimiting": true, //使用启用限流
+        "Period": "10s", //限流控制的时间段 1s, 5m, 1h, 1d （限流控制的时间周期，输入单位支持s（秒）, m（分）, h（时）, d（天））
+        "PeriodTimespan": 1, //超过限流限制的次数后,需要等待重置的时间（单位是秒）
+        "Limit": 10000 //在限流控制时间段内最大访问数（所有非白名单客户端合计）
+      }
+    }
+  ],
+  //全局配置
+  "GlobalConfiguration": {
+    //consul配置
+    "ServiceDiscoveryProvider": {
+      "Host": "127.0.0.1",
+      "Port": 8500
+    },
+    //限流配置
+    "RateLimitOptions": {
+      "DisableRateLimitHeaders": false, //是否显示X-Rate-Limit和Retry-After头（当设为true时，请求头中就不会输出流量限制的相关信息，默认值："false"）
+      "QuotaExceededMessage": "服务器开小差了，请稍后再试!", //当请求数量超出流量限制时，输出的信息，默认值："API calls quota exceeded! maximum admitted {Limit} per {Period}."
+      "HttpStatusCode": 429, //当请求数量超出流量限制时，输出的状态码，默认值："429"
+      "ClientIdHeader": "ClientId" //标识为白名单中的客户端的请求头key，默认值："ClientId"
+    }
+  }
+}
